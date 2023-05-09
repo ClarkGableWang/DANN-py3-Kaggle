@@ -1,6 +1,8 @@
-Original github repository https://github.com/fungtion/DANN_py3
+**Original github repository** https://github.com/fungtion/DANN_py3
 
-Modification: Change the  data installation path to match the initial code
+**Modification: Change the  data installation path to match the initial code**
+
+mnist_m dataset download :[pan.baidu.com](https://pan.baidu.com/s/1pXaMkVsQf_yUT51SeYh27g) with **fetch code** kjan or [Google drive](https://drive.google.com/open?id=0B_tExHiYS-0veklUZHFYT19KYjg)
 
 ## This is a pytorch implementation of the paper *[Unsupervised Domain Adaptation by Backpropagation](http://sites.skoltech.ru/compvision/projects/grl/)*
 
