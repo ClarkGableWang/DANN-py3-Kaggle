@@ -11,11 +11,15 @@ from torchvision import transforms
 from model import CNNModel
 from test import test
 
+current_path = os.path.abspath(__file__)
+father_path = os.path.abspath(os.path.dirname(current_path) + os.path.sep + ".")
+data_path_root = os.path.join(father_path, "dataset")
+
 source_dataset_name = 'MNIST'
 target_dataset_name = 'mnist_m'
-source_image_root = os.path.join('dataset', source_dataset_name)
-target_image_root = os.path.join('dataset', target_dataset_name)
-model_root = 'models'
+source_image_root = os.path.join(data_path_root, source_dataset_name)
+target_image_root = os.path.join(data_path_root, target_dataset_name)
+model_root = os.path.join(father_path, "models")
 cuda = True
 cudnn.benchmark = True
 lr = 1e-3
@@ -42,7 +46,7 @@ img_transform_target = transforms.Compose([
 ])
 
 dataset_source = datasets.MNIST(
-    root='dataset',
+    root=data_path_root,
     train=True,
     transform=img_transform_source,
     download=True

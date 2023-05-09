@@ -5,12 +5,16 @@ from torchvision import transforms
 from data_loader import GetLoader
 from torchvision import datasets
 
+current_path = os.path.abspath(__file__)
+father_path = os.path.abspath(os.path.dirname(current_path) + os.path.sep + ".")
+data_path_root = os.path.join(father_path, "dataset")
+
 
 def test(dataset_name):
     assert dataset_name in ['MNIST', 'mnist_m']
 
-    model_root = 'models'
-    image_root = os.path.join('dataset', dataset_name)
+    model_root = os.path.join(father_path, "models")
+    image_root = os.path.join(data_path_root, dataset_name)
 
     cuda = True
     cudnn.benchmark = True
@@ -42,7 +46,7 @@ def test(dataset_name):
         )
     else:
         dataset = datasets.MNIST(
-            root='dataset',
+            root=data_path_root,
             train=False,
             transform=img_transform_source,
         )
