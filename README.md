@@ -1,3 +1,7 @@
+Original github repository https://github.com/fungtion/DANN_py3
+
+Modification: Change the  data installation path to match the initial code
+
 ## This is a pytorch implementation of the paper *[Unsupervised Domain Adaptation by Backpropagation](http://sites.skoltech.ru/compvision/projects/grl/)*
 
 
