@@ -106,7 +106,7 @@ for epoch in range(n_epoch):
         alpha = 2. / (1. + np.exp(-10 * p)) - 1
 
         # training model using source data
-        data_source = data_source_iter.next()
+        data_source = next(data_source_iter)
         s_img, s_label = data_source
 
         my_net.zero_grad()
@@ -125,7 +125,7 @@ for epoch in range(n_epoch):
         err_s_domain = loss_domain(domain_output, domain_label)
 
         # training model using target data
-        data_target = data_target_iter.next()
+        data_target = next(data_target_iter)
         t_img, _ = data_target
 
         batch_size = len(t_img)
