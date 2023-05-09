@@ -1,6 +1,8 @@
 **Original github repository** https://github.com/fungtion/DANN_py3
 
-**Modification: Change the  data installation path to match the initial code**
+Modification: Change the  data installation path to match the initial code
+
+**Here is a [Colab instance](https://colab.research.google.com/drive/1BCcLFwpgPhzpX31Y2MryX30_qVaMghU0?usp=sharing)**
 
 mnist_m dataset download :[pan.baidu.com](https://pan.baidu.com/s/1pXaMkVsQf_yUT51SeYh27g) with **fetch code** kjan or [Google drive](https://drive.google.com/open?id=0B_tExHiYS-0veklUZHFYT19KYjg)
 
