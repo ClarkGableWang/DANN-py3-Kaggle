@@ -5,26 +5,28 @@ import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import torch.utils.data
 import numpy as np
-from data_loader import GetLoader
-from torchvision import datasets
+from data_loader import npy_to_tensor, train_test_split, load_dataset
 from torchvision import transforms
 from model import CNNModel
-from test import test
 
-current_path = os.path.abspath(__file__)
-father_path = os.path.abspath(os.path.dirname(current_path) + os.path.sep + ".")
-data_path_root = os.path.join(father_path, "dataset")
+torch.manual_seed(99)
+data_root = [r'D:\E\Anaconda\JupyterNotebookLearning\ensorFlow\cwru_train_data\hpdata\cwrude1hptrain100.npy', 
+             r'D:\E\Anaconda\JupyterNotebookLearning\ensorFlow\cwru_train_data\hpdata\cwrude2hptrain100.npy', 
+             r'D:\E\Anaconda\JupyterNotebookLearning\ensorFlow\cwru_train_data\hpdata\cwrude3hptrain100.npy']
+label_root = [r'D:\E\Anaconda\JupyterNotebookLearning\ensorFlow\cwru_train_data\hpdata\cwrude1hplabel100.npy',
+              r'D:\E\Anaconda\JupyterNotebookLearning\ensorFlow\cwru_train_data\hpdata\cwrude2hplabel100.npy', 
+              r'D:\E\Anaconda\JupyterNotebookLearning\ensorFlow\cwru_train_data\hpdata\cwrude3hplabel100.npy']
+source_dataset_root = data_root[2]
+target_dataset_root = data_root[1]
+label_source = label_root[2]
+label_target = label_root[1]
 
-source_dataset_name = 'MNIST'
-target_dataset_name = 'mnist_m'
-source_image_root = os.path.join(data_path_root, source_dataset_name)
-target_image_root = os.path.join(data_path_root, target_dataset_name)
-model_root = os.path.join(father_path, "models")
+
 cuda = True
 cudnn.benchmark = True
 lr = 1e-3
-batch_size = 128
-image_size = 28
+batch_size = 8
+image_size = 32
 n_epoch = 100
 
 manual_seed = random.randint(1, 10000)
@@ -32,54 +34,47 @@ random.seed(manual_seed)
 torch.manual_seed(manual_seed)
 
 # load data
+data_source = np.load(source_dataset_root)
+data_target = np.load(target_dataset_root)
+label_source = np.load(label_source)
+label_target = np.load(label_target)
 
-img_transform_source = transforms.Compose([
-    transforms.Resize(image_size),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=(0.1307,), std=(0.3081,))
-])
+data_source_train, label_source_train, data_source_test, label_source_test = train_test_split(data_source, label_source)
+data_target_train, label_target_train, data_target_test, label_target_test = train_test_split(data_target, label_target)
+dataset_source_train = load_dataset(data_source_train, label_source_train)
+dataset_target_train = load_dataset(data_target_train, label_target_train)
+dataset_source_test = npy_to_tensor(data_source_test, label_source_test)
+dataset_target_test = npy_to_tensor(data_target_test, label_target_test)
 
-img_transform_target = transforms.Compose([
-    transforms.Resize(image_size),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
-])
-
-dataset_source = datasets.MNIST(
-    root=data_path_root,
-    train=True,
-    transform=img_transform_source,
-    download=True
-)
-
-dataloader_source = torch.utils.data.DataLoader(
-    dataset=dataset_source,
+# Create dataloader
+dataloader_source_train = torch.utils.data.DataLoader(
+    dataset=dataset_source_train,
     batch_size=batch_size,
     shuffle=True,
-    num_workers=8)
-
-train_list = os.path.join(target_image_root, 'mnist_m_train_labels.txt')
-
-dataset_target = GetLoader(
-    data_root=os.path.join(target_image_root, 'mnist_m_train'),
-    data_list=train_list,
-    transform=img_transform_target
-)
-
-dataloader_target = torch.utils.data.DataLoader(
-    dataset=dataset_target,
+    num_workers=0)
+dataloader_target_train = torch.utils.data.DataLoader(
+    dataset=dataset_target_train,
     batch_size=batch_size,
     shuffle=True,
-    num_workers=8)
+    num_workers=0)
+dataloader_source_test = torch.utils.data.DataLoader(
+    dataset=dataset_source_test,
+    batch_size=batch_size,
+    shuffle=True,
+    num_workers=0)
+dataloader_target_test = torch.utils.data.DataLoader(
+    dataset=dataset_target_test,
+    batch_size=batch_size,
+    shuffle=True,
+    num_workers=0)
 
 # load model
-
 my_net = CNNModel()
 
 # setup optimizer
-
 optimizer = optim.Adam(my_net.parameters(), lr=lr)
 
+# Loss function
 loss_class = torch.nn.NLLLoss()
 loss_domain = torch.nn.NLLLoss()
 
@@ -92,13 +87,17 @@ for p in my_net.parameters():
     p.requires_grad = True
 
 # training
-best_accu_t = 0.0
+
+best_acc_s = 0.0
+best_acc_t = 0.0
+
 for epoch in range(n_epoch):
+    len_dataloader = min(len(dataloader_source_train), len(dataloader_target_train))
+    data_source_iter = iter(dataloader_source_train)
+    data_target_iter = iter(dataloader_target_train)
 
-    len_dataloader = min(len(dataloader_source), len(dataloader_target))
-    data_source_iter = iter(dataloader_source)
-    data_target_iter = iter(dataloader_target)
-
+    print('*'*20, 'Training', '*'*20)
+    my_net.train()
     for i in range(len_dataloader):
 
         p = float(i + epoch * len_dataloader) / n_epoch / len_dataloader
@@ -146,19 +145,55 @@ for epoch in range(n_epoch):
               % (epoch, i + 1, len_dataloader, err_s_label.data.cpu().numpy(),
                  err_s_domain.data.cpu().numpy(), err_t_domain.data.cpu().item()))
         sys.stdout.flush()
-        torch.save(my_net, '{0}/mnist_mnistm_model_epoch_current.pth'.format(model_root))
+        # torch.save(my_net, '{0}/mnist_mnistm_model_epoch_current.pth'.format(model_root))
+    
+    # test
+    print('\n') 
+    print('*'*20, 'Testing', '*'*20)    
+    len_dataloader = len(dataloader_source_test)
+    dataset_iter = iter(dataloader_source_test)
+    n_total = 0
+    n_correct = 0
+    my_net.eval()
+    for i in range(len_dataloader):
+        data_test = next(dataset_iter)
+        t_img, t_lab = data_test
+        t_img, t_lab = t_img.cuda(), t_lab.cuda()
 
-    print('\n')
-    accu_s = test(source_dataset_name)
-    print('Accuracy of the %s dataset: %f' % ('mnist', accu_s))
-    accu_t = test(target_dataset_name)
-    print('Accuracy of the %s dataset: %f\n' % ('mnist_m', accu_t))
-    if accu_t > best_accu_t:
-        best_accu_s = accu_s
-        best_accu_t = accu_t
-        torch.save(my_net, '{0}/mnist_mnistm_model_epoch_best.pth'.format(model_root))
+        batch_size = len(t_lab)
+        class_output, _ = my_net(input_data=t_img, alpha=alpha)
+        pred = class_output.data.max(1, keepdim=True)[1]
+        n_correct += pred.eq(t_lab.data.view_as(pred)).cpu().sum()
+        n_total += batch_size
+    acc_s = n_correct.data.numpy() * 1.0 / n_total
+    print('Accuracy of the %s dataset: %f' % ('source', acc_s))
 
-print('============ Summary ============= \n')
-print('Accuracy of the %s dataset: %f' % ('mnist', best_accu_s))
-print('Accuracy of the %s dataset: %f' % ('mnist_m', best_accu_t))
-print('Corresponding model was save in ' + model_root + '/mnist_mnistm_model_epoch_best.pth')
+    len_dataloader = len(dataloader_target_test)
+    dataset_iter = iter(dataloader_target_test)
+    n_total = 0
+    n_correct = 0
+    my_net.eval()
+    for i in range(len_dataloader):
+        data_test = next(dataset_iter)
+        t_img, t_lab = data_test
+        t_img, t_lab = t_img.cuda(), t_lab.cuda()
+
+        batch_size = len(t_lab)
+        class_output, _ = my_net(input_data=t_img, alpha=alpha)
+        pred = class_output.data.max(1, keepdim=True)[1]
+        n_correct += pred.eq(t_lab.data.view_as(pred)).cpu().sum()
+        n_total += batch_size
+    acc_t = n_correct.data.numpy() * 1.0 / n_total
+    print('Accuracy of the %s dataset: %f\n' % ('target', acc_t))
+
+    if acc_s > best_acc_s:
+        best_acc_s = acc_s
+    if acc_t > best_acc_t:
+        best_acc_t = acc_t
+
+    # torch.save(my_net, '{0}/mnist_mnistm_model_epoch_best.pth'.format(model_root))
+
+print('='*20, 'Summary', '='*20)
+print('Accuracy of the %s dataset: %f' % ('mnist', best_acc_s))
+print('Accuracy of the %s dataset: %f' % ('mnist_m', best_acc_t))
+# print('Corresponding model was save in ' + model_root + '/mnist_mnistm_model_epoch_best.pth')
