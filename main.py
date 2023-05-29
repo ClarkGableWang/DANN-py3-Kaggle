@@ -10,12 +10,12 @@ from torchvision import transforms
 from model import CNNModel
 
 torch.manual_seed(99)
-data_root = [r'D:\E\Anaconda\JupyterNotebookLearning\ensorFlow\cwru_train_data\hpdata\cwrude1hptrain100.npy', 
-             r'D:\E\Anaconda\JupyterNotebookLearning\ensorFlow\cwru_train_data\hpdata\cwrude2hptrain100.npy', 
-             r'D:\E\Anaconda\JupyterNotebookLearning\ensorFlow\cwru_train_data\hpdata\cwrude3hptrain100.npy']
-label_root = [r'D:\E\Anaconda\JupyterNotebookLearning\ensorFlow\cwru_train_data\hpdata\cwrude1hplabel100.npy',
-              r'D:\E\Anaconda\JupyterNotebookLearning\ensorFlow\cwru_train_data\hpdata\cwrude2hplabel100.npy', 
-              r'D:\E\Anaconda\JupyterNotebookLearning\ensorFlow\cwru_train_data\hpdata\cwrude3hplabel100.npy']
+data_root = [r'/kaggle/input/cwrude1hptrain100/cwrude1hptrain100.npy', 
+             r'/kaggle/input/cwrude2hptrain100/cwrude2hptrain100.npy', 
+             r'/kaggle/input/cwrude3hptrain100/cwrude3hptrain100.npy']
+label_root = [r'/kaggle/input/cwrude1hplabel100/cwrude1hplabel100.npy',
+              r'/kaggle/input/cwrude2hplabel100/cwrude2hplabel100.npy', 
+              r'/kaggle/input/cwrude3hplabel100/cwrude3hplabel100.npy']
 source_dataset_root = data_root[2]
 target_dataset_root = data_root[1]
 label_source = label_root[2]
