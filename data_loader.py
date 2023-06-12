@@ -35,10 +35,10 @@ def load_dataset(data, label):
     data_aug = []
 
     img_trans = T.Compose([
-        T.RandomHorizontalFlip(p=0.5),
-        T.RandomVerticalFlip(p=0.5), 
+        # T.RandomHorizontalFlip(p=0.5),
+        # T.RandomVerticalFlip(p=0.5),
         T.RandomApply([T.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8), 
-        T.RandomRotation((0, 360)), 
+        # T.RandomRotation((0, 360)),
         T.ToTensor()
     ])
 
